@@ -1,0 +1,463 @@
+/* Glassmorphism Card Effect */
+.cardContainer {
+    position: relative;
+}
+
+.cardContainer::before,
+.cardContainer::after {
+    content: "";
+    background-color: #fab5704c;
+    position: absolute;
+    z-index: -1;
+}
+
+.cardContainer::before {
+    border-radius: 50%;
+    width: 6rem;
+    height: 6rem;
+    top: 30%;
+    right: 7%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.cardContainer::after {
+    content: "";
+    position: absolute;
+    height: 3rem;
+    top: 8%;
+    right: 5%;
+    border: 1px solid #fab570;
+    animation: rotate 8s linear infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.glassCard {
+    background-color: rgba(255, 255, 255, 0.074);
+    border: 1px solid rgba(255, 255, 255, 0.222);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: all ease 0.3s;
+    border-radius: 30px;
+    box-shadow: 15px 15px 30px #bebebe,
+        -15px -15px 30px #ffffff;
+}
+
+.glassCard:hover {
+    box-shadow: 0px 0px 20px 1px #ffbb763f,
+        20px 20px 40px #bebebe,
+        -20px -20px 40px #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.454);
+    transform: translateY(-8px);
+}
+
+/* Animated Read More Button */
+.readMoreButton {
+    width: 100%;
+    position: relative;
+    height: 3.5em;
+    border: 3px ridge #ff8c42;
+    outline: none;
+    background-color: transparent;
+    color: currentColor;
+    transition: 1s;
+    border-radius: 0.3em;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.readMoreButton::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 3%;
+    width: 95%;
+    height: 40%;
+    background-color: hsl(var(--background));
+    transition: 0.5s;
+    transform-origin: center;
+    z-index: -1;
+}
+
+.readMoreButton::before {
+    content: "";
+    transform-origin: center;
+    position: absolute;
+    top: 80%;
+    left: 3%;
+    width: 95%;
+    height: 40%;
+    background-color: hsl(var(--background));
+    transition: 0.5s;
+    z-index: -1;
+}
+
+.readMoreButton:hover::before,
+.readMoreButton:hover::after {
+    transform: scale(0);
+}
+
+.readMoreButton:hover {
+    box-shadow: inset 0px 0px 25px #ff8c42;
+    color: #ff8c42;
+}
+
+/* Animated Delete Button */
+.deleteButton {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.75rem;
+    border: 2px solid rgb(153, 27, 27);
+    background-color: rgb(248, 113, 113);
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.deleteButton:hover {
+    background-color: rgb(220, 38, 38);
+}
+
+.deleteButton .lidSvg {
+    position: absolute;
+    top: -1.75rem;
+    fill: white;
+    transition: top 0.1s;
+    animation-delay: 0.1s;
+}
+
+.deleteButton:hover .lidSvg {
+    top: 1.5rem;
+    animation: spin 1.4s;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.deleteButton .linesSvg {
+    width: 1rem;
+    transform-origin: right;
+    transition: transform 0.5s;
+}
+
+.deleteButton:hover .linesSvg {
+    transform: rotate(90deg);
+}
+
+.deleteButton .binSvg {
+    width: 1rem;
+}
+
+/* 3D Card Perspective Effect */
+.cardPerspective {
+    perspective: 500px;
+}
+
+.card3D {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.5s ease;
+    position: relative;
+}
+
+.card3D:hover {
+    transform: translateZ(10px) rotateX(20deg) rotateY(20deg);
+}
+
+.cardImageWrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.cardTitle3D {
+    color: #fff;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    transition: transform 0.5s ease;
+    font-weight: 700;
+    font-size: 1.5rem;
+    font-family: monospace;
+    text-shadow: -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000,
+        0 0 10px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.card3D:hover .cardTitle3D {
+    transform: translateY(-50%) translateZ(50px);
+}
+
+/* Contact Button with Animation */
+.contactButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background-color: #ff8c42;
+    border: 4px solid #ffd4b3;
+    color: white;
+    gap: 8px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1.25em;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.contactButton:hover {
+    border: 4px solid #ffbd8a;
+    background-color: #ff9d5c;
+}
+
+.contactButton:active {
+    border: 2px solid #ffd4b3;
+}
+
+.contactButtonIcon {
+    padding-top: 5px;
+    height: 100%;
+    width: fit-content;
+}
+
+.contactButtonIcon svg {
+    width: 50px;
+    height: 30px;
+}
+
+.contactButton:hover .contactButtonIcon svg {
+    animation: jello-vertical 0.9s both;
+    transform-origin: left;
+}
+
+@keyframes jello-vertical {
+    0% {
+        transform: scale3d(1, 1, 1);
+    }
+
+    30% {
+        transform: scale3d(0.75, 1.25, 1);
+    }
+
+    40% {
+        transform: scale3d(1.25, 0.75, 1);
+    }
+
+    50% {
+        transform: scale3d(0.85, 1.15, 1);
+    }
+
+    65% {
+        transform: scale3d(1.05, 0.95, 1);
+    }
+
+    100% {
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+/* 3D Flip Card Effect */
+.flipCard {
+    overflow: visible;
+    width: 100%;
+    height: 320px;
+    perspective: 1000px;
+}
+
+.flipCardInner {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    position: relative;
+}
+
+.flipCard:hover .flipCardInner {
+    transform: rotateY(180deg);
+}
+
+.flipCardFront,
+.flipCardBack {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 15px 15px 30px #bebebe,
+        -15px -15px 30px #ffffff;
+}
+
+.flipCardFront {
+    transform: rotateY(180deg);
+}
+
+.flipCardBack {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+}
+
+.flipCardBack::before {
+    position: absolute;
+    content: ' ';
+    display: block;
+    width: 160px;
+    height: 160%;
+    background: linear-gradient(90deg, transparent, #ff8c42, #ffbb66, #ff8c42, transparent);
+    animation: rotation_481 3s infinite linear;
+}
+
+.flipCardBackContent {
+    position: absolute;
+    width: 98%;
+    height: 98%;
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+    border-radius: 0.75rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+@keyframes rotation_481 {
+    0% {
+        transform: rotateZ(0deg);
+    }
+
+    100% {
+        transform: rotateZ(360deg);
+    }
+}
+
+.flipCardFrontContent {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.flipCardImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 30px;
+    box-shadow: 15px 15px 30px #bebebe,
+        -15px -15px 30px #ffffff;
+    transition: transform 0.4s ease;
+}
+
+.flipCardImage:hover {
+    transform: scale(1.2);
+}
+
+.flipCard:hover .flipCardImage {
+    box-shadow: 20px 20px 40px #bebebe,
+        -20px -20px 40px #ffffff;
+}
+
+.flipCardBadge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    z-index: 10;
+}
+
+.flipCardTitle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    backdrop-filter: blur(5px);
+    padding: 1.5rem 1rem 1rem;
+    color: white;
+}
+
+.floatingCircle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.3;
+    animation: floating 3s infinite ease-in-out;
+    pointer-events: none;
+}
+
+.floatingCircle1 {
+    width: 100px;
+    height: 100px;
+    background-color: #ff8c42;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floatingCircle2 {
+    width: 80px;
+    height: 80px;
+    background-color: #ffbb66;
+    bottom: 20%;
+    right: 10%;
+    animation-delay: -1.5s;
+}
+
+@keyframes floating {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(20px);
+    }
+}

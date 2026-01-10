@@ -1,0 +1,32 @@
+# ✅ ORDER & PAYMENT TEST CHECKLIST
+
+## 1. PhonePe Payment
+1. Select Ice Creams
+2. Select "PhonePe"
+3. Click "Complete Payment"
+4. **Expected:** 
+   - Spinner shows "Processing..."
+   - Toast Appears: "Order Submitted Successfully! 🎉"
+   - Email Sent to `chvamshi482@gmail.com`
+
+## 2. Cash on Delivery
+1. Select Ice Creams
+2. Select "Cash on Delivery"
+3. Click "Confirm Order"
+4. **Expected:**
+   - Button changes to "Confirming Order..."
+   - Toast Appears: "Order Submitted Successfully! 🎉"
+   - Email Sent to `chvamshi482@gmail.com`
+
+## 🚀 Status
+- **Backend**: Fixed with Hardcoded Key (Bulletproof)
+- **Frontend**: Both buttons wired correctly
+- **Email**: Web3Forms (Simple JSON)
+
+## ⚠️ If Email Fails
+If "Email sent: false" appears:
+- Check the RED TOAST message.
+- It will say exactly why (e.g. "Quota exceeded" or "Invalid key").
+- But with the new key (`d94c3...`), it should be perfect!
+
+**Test both buttons now!**
