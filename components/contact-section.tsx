@@ -53,6 +53,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
   const [showPayment, setShowPayment] = useState(false)
   const [location, setLocation] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<"requesting" | "granted" | "denied" | null>(null)
+  const [updateKey, setUpdateKey] = useState(0) // Force re-render key
   const { toast } = useToast()
 
 
@@ -201,8 +202,23 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
         onFlavorUpdate(newFlavors)
       }
 
+      // Sync with cart - update cart quantities
+      if (typeof window !== 'undefined') {
+        const { updateCartQuantity, getCart } = require('@/lib/cart-store')
+        const cart = getCart()
+        const cartItem = cart.find((item: any) => item.id === flavor)
+
+        if (cartItem) {
+          const newQuantity = newFlavors.filter((f) => f === flavor).length
+          updateCartQuantity(flavor, newQuantity)
+        }
+      }
+
       return updatedData
     })
+
+    // Force re-render to update the display
+    setUpdateKey(prev => prev + 1)
   }
 
   const getFlavorQuantity = (flavor: string) => {
@@ -391,73 +407,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-8">
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-primary" />
-                  Contact Information
-                </CardTitle>
-                <CardDescription>Get in touch with us directly</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span>6309312041</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span>moores1807@gmail.com</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span>Moores Ice Cream Store</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span>Open Daily: 10:00 AM - 10:00 PM</span>
-                  </div>
-                </div>
-
-                <a href="tel:6309312041" className="block w-full">
-                  <div className={styles.contactButton}>
-                    <span>Call Now</span>
-                    <div className={styles.contactButtonIcon}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                      </svg>
-                    </div>
-                  </div>
-                </a>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Why Choose Moores?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  <li>• Premium quality ingredients</li>
-                  <li>• Handcrafted with traditional recipes</li>
-                  <li>• Wide variety of unique flavors</li>
-                  <li>• Fresh delivery to your doorstep</li>
-                  <li>• Family-owned business since years</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className="max-w-3xl mx-auto">
           <Card>
             <CardHeader>
               <CardTitle>Complete Your Order</CardTitle>

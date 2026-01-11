@@ -4,40 +4,51 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette for ice cream theme with warm oranges and creams */
-  --background: oklch(1 0 0); /* Pure white */
-  --foreground: oklch(0.3 0 0); /* Dark gray for text */
-  --card: oklch(0.98 0.02 85); /* Light cream for cards */
+  /* Ice cream themed color palette with sweet pastels */
+  --font-fredoka: 'Fredoka', sans-serif;
+
+  --background: oklch(0.99 0.01 90);
+  /* Soft cream background */
+  --foreground: oklch(0.25 0.02 30);
+  /* Rich chocolate text */
+  --card: oklch(0.98 0.02 85);
+  /* Vanilla cream for cards */
   --card-foreground: oklch(0.3 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.3 0 0);
-  --primary: oklch(0.65 0.15 45); /* Warm amber/orange for primary */
+  --primary: oklch(0.68 0.18 40);
+  /* Vibrant orange sherbet */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.75 0.12 55); /* Bright orange for accents */
+  --secondary: oklch(0.78 0.15 50);
+  /* Bright mango orange */
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.98 0.02 85); /* Light cream for muted sections */
-  --muted-foreground: oklch(0.3 0 0);
-  --accent: oklch(0.75 0.12 55); /* Bright orange for highlights */
+  --muted: oklch(0.96 0.03 80);
+  /* Light peach cream */
+  --muted-foreground: oklch(0.45 0.02 30);
+  --accent: oklch(0.78 0.15 50);
+  /* Sweet orange accent */
   --accent-foreground: oklch(0.3 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.01 85); /* Light cream border */
+  --border: oklch(0.92 0.02 75);
+  /* Soft cream border */
   --input: oklch(1 0 0);
-  --ring: oklch(0.75 0.12 55 / 0.6); /* Orange ring for focus */
-  --chart-1: oklch(0.75 0.12 55);
-  --chart-2: oklch(0.65 0.15 45);
+  --ring: oklch(0.78 0.15 50 / 0.6);
+  /* Orange ring for focus */
+  --chart-1: oklch(0.78 0.15 50);
+  --chart-2: oklch(0.68 0.18 40);
   --chart-3: oklch(0.577 0.245 27.325);
   --chart-4: oklch(0.55 0.18 40);
   --chart-5: oklch(0.98 0.02 85);
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.98 0.02 85);
   --sidebar-foreground: oklch(0.3 0 0);
-  --sidebar-primary: oklch(0.65 0.15 45);
+  --sidebar-primary: oklch(0.68 0.18 40);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.75 0.12 55);
+  --sidebar-accent: oklch(0.78 0.15 50);
   --sidebar-accent-foreground: oklch(0.3 0 0);
-  --sidebar-border: oklch(0.9 0.01 85);
-  --sidebar-ring: oklch(0.75 0.12 55 / 0.6);
+  --sidebar-border: oklch(0.92 0.02 75);
+  --sidebar-ring: oklch(0.78 0.15 50 / 0.6);
 }
 
 .dark {
@@ -120,8 +131,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-transparent text-foreground;
   }
 }
 
@@ -131,6 +143,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -138,10 +151,13 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
   }
+
   50% {
     transform: scale(1.05);
     box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.2);
@@ -149,9 +165,12 @@
 }
 
 @keyframes bounce-subtle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
@@ -161,9 +180,11 @@
   0% {
     transform: scale(0) rotate(0deg);
   }
+
   50% {
     transform: scale(1.2) rotate(10deg);
   }
+
   100% {
     transform: scale(1) rotate(0deg);
   }
@@ -173,6 +194,7 @@
   0% {
     background-position: -200% center;
   }
+
   100% {
     background-position: 200% center;
   }
@@ -183,6 +205,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -190,9 +213,12 @@
 }
 
 @keyframes glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(79, 70, 229, 0.8), 0 0 30px rgba(139, 92, 246, 0.6);
   }
@@ -215,12 +241,10 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0) 100%);
   background-size: 200% auto;
   animation: shimmer 2s linear infinite;
 }
@@ -231,4 +255,19 @@
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+  white-space: nowrap;
 }

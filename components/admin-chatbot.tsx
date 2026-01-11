@@ -56,20 +56,38 @@ export function AdminChatbot({ orders, calls }: AdminChatbotProps) {
         const todayCalls = getTodayCalls()
         const todayDeliveries = getTodayDeliveries()
 
-        const totalRevenue = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
-        const phonePePayments = todayOrders.filter(o => o.paymentMethod === 'phonepe').length
-        const codPayments = todayOrders.filter(o => o.paymentMethod === 'cod').length
+        // Calculate Today's Stats
+        const todayRevenue = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+
+        // Calculate All-Time Stats
+        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+        const allTimePhonePe = orders.filter(o => o.paymentMethod === 'phonepe').length
+        const allTimeCod = orders.filter(o => o.paymentMethod === 'cod').length
 
         const context = {
+            // Today's Data
             todayOrdersCount: todayOrders.length,
             todayCallsCount: todayCalls.length,
             todayDeliveriesCount: todayDeliveries.length,
+            todayRevenue: todayRevenue.toFixed(2),
+            todayPhonePe: todayOrders.filter(o => o.paymentMethod === 'phonepe').length,
+            todayCod: todayOrders.filter(o => o.paymentMethod === 'cod').length,
+
+            // All-Time Data
+            totalOrdersCount: orders.length,
+            totalCallsCount: calls.length,
             totalRevenue: totalRevenue.toFixed(2),
-            phonePeCount: phonePePayments,
-            codCount: codPayments,
-            orders: todayOrders,
-            calls: todayCalls,
-            deliveries: todayDeliveries
+            allTimePhonePe: allTimePhonePe,
+            allTimeCod: allTimeCod,
+
+            // Raw Data (Limit to recent for token efficiency if needed, but passing all for now)
+            // Raw Data Lists (Formatted for AI to read dates)
+            formattedOrdersList: orders.slice(0, 100).map(o =>
+                `[Date: ${new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}, Delivery: ${o.deliveryDate}, Amount: ₹${o.totalAmount}, Payment: ${o.paymentMethod}, Name: ${o.name}]`
+            ).join('\n'),
+            formattedCallsList: calls.slice(0, 100).map(c =>
+                `[Date: ${new Date(c.scheduledDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}, Status: ${c.status || 'pending'}, Name: ${c.customerName || c.name}]`
+            ).join('\n')
         }
 
         return context

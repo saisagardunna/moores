@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
     const fetchCalls = async () => {
         try {
-            const response = await fetch("/api/calls")
+            const response = await fetch("/api/schedule-call")
             const data = await response.json()
             if (data.success) {
                 setCalls(data.calls || [])

@@ -4,22 +4,36 @@ export async function POST(request: NextRequest) {
     try {
         const { message, context } = await request.json()
 
-        const systemPrompt = `You are an admin assistant for Moore's Ice Cream. You have access to today's data:
-- Total orders today: ${context.todayOrdersCount}
-- Total calls scheduled today: ${context.todayCallsCount}
-- Deliveries for today: ${context.todayDeliveriesCount}
-- Today's revenue: ₹${context.totalRevenue}
-- PhonePe payments: ${context.phonePeCount}
-- Cash on Delivery: ${context.codCount}
+        const systemPrompt = `You are an admin assistant for Moore's Ice Cream. You have access to the following business data:
+        
+TODAY'S OVERVIEW:
+- Orders today: ${context.todayOrdersCount}
+- Calls scheduled today: ${context.todayCallsCount}
+- Deliveries due today: ${context.todayDeliveriesCount}
+- Revenue today: ₹${context.todayRevenue}
+- Today's Payments: PhonePe (${context.todayPhonePe}), COD (${context.todayCod})
 
-You MUST ONLY answer questions related to:
-1. Today's orders (count, revenue, payment methods)
-2. Today's scheduled calls
-3. Today's deliveries
-4. Order and call statistics
+ALL-TIME / TOTAL STATISTICS:
+- Total All-Time Orders: ${context.totalOrdersCount}
+- Total All-Time Calls: ${context.totalCallsCount}
+- Total All-Time Revenue: ₹${context.totalRevenue}
+- All-Time Payments: PhonePe (${context.allTimePhonePe}), COD (${context.allTimeCod})
 
-If asked about anything else, politely decline and say you can only help with order and call information.
-Be concise, professional, and helpful. Use bullet points when listing multiple items.`
+DETAILED LOGS (Last 100 entries):
+Orders Log:
+${context.formattedOrdersList}
+
+Calls Log:
+${context.formattedCallsList}
+
+INSTRUCTIONS:
+1. If the user asks for "total orders", "all orders", or "overall stats", use the ALL-TIME data.
+2. If the user explicitly asks for "today", use TODAY'S data.
+3. If the user asks for a SPECIFIC DATE (e.g., "orders on Jan 12th"), search the "Orders Log" or "Calls Log" provided above and summarize the data for that specific date.
+4. If unspecified (e.g., "how many orders?"), provide BOTH today's count and the all-time total for better context.
+5. You can also answer specific questions about recent orders if asked.
+
+Be concise, professional, and helpful. Use bullet points for clarity.`
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",

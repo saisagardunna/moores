@@ -37,7 +37,7 @@ export default function FlavorDetailPage() {
             {/* Header */}
             <div className="bg-primary/5 border-b">
                 <div className="max-w-6xl mx-auto px-4 py-6">
-                    <Button variant="ghost" onClick={() => router.push("/")} className="mb-4">
+                    <Button variant="ghost" onClick={() => router.push("/flavors-list")} className="mb-4">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to All Flavors
                     </Button>
@@ -64,11 +64,21 @@ export default function FlavorDetailPage() {
                             </div>
                             <p className="text-lg text-muted-foreground mb-6">{flavor.shortDescription}</p>
                             <div className="flex gap-4 flex-wrap">
-                                <Button size="lg" className="text-lg" onClick={() => router.push("/#contact")}>
+                                <Button size="lg" className="text-lg" onClick={() => {
+                                    const { addToCart } = require("@/lib/cart-store")
+                                    addToCart({
+                                        id: flavorId,
+                                        name: flavor.name,
+                                        price: flavor.price,
+                                        image: flavor.image || "/placeholder.svg"
+                                    }, 1)
+                                    window.dispatchEvent(new Event('cartUpdated'))
+                                    router.push("/cart")
+                                }}>
                                     <ShoppingCart className="mr-2 h-5 w-5" />
                                     Order Now
                                 </Button>
-                                <Button size="lg" variant="outline" onClick={() => router.push("/#flavors")}>
+                                <Button size="lg" variant="outline" onClick={() => router.push("/flavors-list")}>
                                     View All Flavors
                                 </Button>
                             </div>
@@ -207,11 +217,21 @@ export default function FlavorDetailPage() {
                         <h3 className="text-2xl font-bold mb-2">Ready to Experience {flavor.name}?</h3>
                         <p className="text-muted-foreground mb-6">Order your 4-liter pack today and enjoy premium quality ice cream at home</p>
                         <div className="flex gap-4 justify-center flex-wrap">
-                            <Button size="lg" onClick={() => router.push("/#contact")}>
+                            <Button size="lg" onClick={() => {
+                                const { addToCart } = require("@/lib/cart-store")
+                                addToCart({
+                                    id: flavorId,
+                                    name: flavor.name,
+                                    price: flavor.price,
+                                    image: flavor.image || "/placeholder.svg"
+                                }, 1)
+                                window.dispatchEvent(new Event('cartUpdated'))
+                                router.push("/cart")
+                            }}>
                                 <ShoppingCart className="mr-2 h-5 w-5" />
                                 Place Your Order
                             </Button>
-                            <Button size="lg" variant="outline" onClick={() => router.push("/#flavors")}>
+                            <Button size="lg" variant="outline" onClick={() => router.push("/flavors-list")}>
                                 Explore More Flavors
                             </Button>
                         </div>

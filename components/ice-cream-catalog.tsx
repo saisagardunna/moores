@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Plus, Minus, ShoppingCart, BookOpen } from "lucide-react"
+import { Plus, Minus, ShoppingCart, BookOpen, Heart } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 import styles from "./ice-cream-effects.module.css"
 
 interface IceCreamFlavor {
@@ -182,6 +183,8 @@ const FlavorCard = ({
   quantity: number
   onUpdateQuantity: (id: string, qty: number) => void
 }) => {
+  const { toast } = useToast()
+
   return (
     <div className={styles.cardContainer}>
       <Card className={`${styles.glassCard} group transition-all duration-300`}>
@@ -216,80 +219,50 @@ const FlavorCard = ({
                 Read More
               </button>
             </Link>
-            {quantity > 0 ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 shrink-0"
-                    onClick={() => onUpdateQuantity(flavor.id, quantity - 1)}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={quantity}
-                    onChange={(e) => onUpdateQuantity(flavor.id, parseInt(e.target.value) || 0)}
-                    className="text-center text-lg font-medium h-10"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 shrink-0"
-                    onClick={() => onUpdateQuantity(flavor.id, quantity + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => onUpdateQuantity(flavor.id, 0)}
-                  title="Remove from cart"
-                >
-                  <svg
-                    viewBox="0 0 1.625 1.625"
-                    className={styles.lidSvg}
-                    height="15"
-                    width="15"
-                  >
-                    <path d="M.471 1.024v-.52a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099h-.39c-.107 0-.195 0-.195-.195"></path>
-                    <path d="M1.219.601h-.163A.1.1 0 0 1 .959.504V.341A.033.033 0 0 0 .926.309h-.26a.1.1 0 0 0-.098.098v.618c0 .054.044.098.098.098h.487a.1.1 0 0 0 .098-.099v-.39a.033.033 0 0 0-.032-.033"></path>
-                    <path d="m1.245.465-.15-.15a.02.02 0 0 0-.016-.006.023.023 0 0 0-.023.022v.108c0 .036.029.065.065.065h.107a.023.023 0 0 0 .023-.023.02.02 0 0 0-.007-.016"></path>
-                  </svg>
-                  <svg
-                    width="16"
-                    fill="none"
-                    viewBox="0 0 39 7"
-                    className={styles.linesSvg}
-                  >
-                    <line strokeWidth="4" stroke="white" y2="5" x2="39" y1="5"></line>
-                    <line strokeWidth="3" stroke="white" y2="1.5" x2="26.0357" y1="1.5" x1="12"></line>
-                  </svg>
-                  <svg width="16" fill="none" viewBox="0 0 33 39" className={styles.binSvg}>
-                    <mask fill="white" id="path-1-inside-1_8_19">
-                      <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
-                    </mask>
-                    <path
-                      mask="url(#path-1-inside-1_8_19)"
-                      fill="white"
-                      d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                    ></path>
-                    <path strokeWidth="4" stroke="white" d="M12 6L12 29"></path>
-                    <path strokeWidth="4" stroke="white" d="M21 6V29"></path>
-                  </svg>
-                </button>
-              </div>
-            ) : (
+
+            {/* Cart and Wishlist Buttons */}
+            <div className="flex gap-2">
               <Button
-                className="w-full"
-                onClick={() => onUpdateQuantity(flavor.id, 1)}
+                className="flex-1"
+                onClick={() => {
+                  const { addToCart } = require("@/lib/cart-store")
+                  addToCart({
+                    id: flavor.id,
+                    name: flavor.name,
+                    price: flavor.price || "₹0",
+                    image: flavor.image || "/placeholder.svg"
+                  }, 1)
+                  window.dispatchEvent(new Event('cartUpdated'))
+
+                  // Show confirmation toast instead of redirecting
+                  toast({
+                    title: "Added to cart",
+                    description: `${flavor.name} added. Checkout when ready!`,
+                    duration: 2000,
+                  })
+                }}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add to Order
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add
               </Button>
-            )}
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  const { addToWishlist, isInWishlist } = require("@/lib/cart-store")
+                  addToWishlist({
+                    id: flavor.id,
+                    name: flavor.name,
+                    price: flavor.price || "₹0",
+                    image: flavor.image || "/placeholder.svg"
+                  })
+                  window.dispatchEvent(new Event('cartUpdated'))
+                }}
+              >
+                <Heart className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -329,17 +302,31 @@ export function IceCreamCatalog({ onFlavorSelect, selectedFlavors = [], onFlavor
   }
 
   return (
-    <section id="flavors" className="py-16 px-4 bg-muted/30">
-      <div className="max-w-7xl mx-auto">
+    <section id="flavors" className="relative py-16 px-4 overflow-hidden">
+      {/* Full Screen Fog Effect */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="/sidefog.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+
+      <div className="relative z-10 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4 text-balance">Our Ice Cream Collection</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 text-balance drop-shadow-2xl">Our Ice Cream Collection</h2>
+          <p className="text-xl text-white/90 max-w-3xl mx-auto text-pretty drop-shadow-xl">
             Click on any flavor to automatically go to the order section. Use the + button to add multiple quantities!
           </p>
           {currentSelectedFlavors.length > 0 && (
             <div className="mt-6 flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="p-4 bg-primary/10 rounded-lg inline-block">
-                <p className="text-primary font-medium text-lg">
+              <div className="p-4 bg-black/30 rounded-lg inline-block">
+                <p className="text-white font-medium text-lg">
                   {currentSelectedFlavors.length} item{currentSelectedFlavors.length > 1 ? "s" : ""} selected
                 </p>
               </div>
@@ -356,9 +343,9 @@ export function IceCreamCatalog({ onFlavorSelect, selectedFlavors = [], onFlavor
         </div>
 
         <Tabs defaultValue="4-liter" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-transparent border border-white/20">
             {Object.entries(categoryLabels).map(([key, label]) => (
-              <TabsTrigger key={key} value={key} className="text-sm md:text-base">
+              <TabsTrigger key={key} value={key} className="text-sm md:text-base data-[state=active]:bg-black/30">
                 {label}
               </TabsTrigger>
             ))}
@@ -367,8 +354,8 @@ export function IceCreamCatalog({ onFlavorSelect, selectedFlavors = [], onFlavor
           {Object.entries(categoryLabels).map(([category, label]) => (
             <TabsContent key={category} value={category}>
               <div className="mb-8 text-center">
-                <h3 className="text-2xl font-semibold text-foreground mb-2">{label}</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-2xl font-semibold text-white mb-2 drop-shadow-xl">{label}</h3>
+                <p className="text-white/80 drop-shadow-lg">
                   {categoryDescriptions[category as keyof typeof categoryDescriptions]}
                 </p>
               </div>

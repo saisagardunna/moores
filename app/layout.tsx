@@ -1,9 +1,16 @@
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+import { Fredoka } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
+import { Header } from '@/components/header'
 import './globals.css'
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-fredoka',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: "Moore's Ice Cream - Order Your Favorite Flavors",
@@ -18,8 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        {children}
+      <body className={`${fredoka.variable} font-fredoka antialiased`}>
+        <Header />
+        <div className="pt-20">
+          {children}
+        </div>
         <Toaster />
         <Analytics />
       </body>
