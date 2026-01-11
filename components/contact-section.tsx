@@ -10,15 +10,24 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Phone, Mail, MapPin, Clock, Minus, Plus, Wallet, Banknote, Smartphone } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, Minus, Plus, Wallet, Banknote, Smartphone, Loader2 } from "lucide-react"
+import dynamic from "next/dynamic"
 import { useToast } from "@/hooks/use-toast"
 import { PaymentQR } from "@/components/payment-qr"
 import { ScheduleCall } from "@/components/schedule-call"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { exportOrderToExcel } from "@/lib/excel-export"
 import { generateOrderPDF } from "@/lib/pdf-export"
 import styles from "@/components/ice-cream-effects.module.css"
 import { flavorDetails } from "@/lib/flavor-data"
+const LeafletLocationPicker = dynamic(() => import('./LeafletLocationPicker'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full rounded-lg bg-orange-50 flex flex-col items-center justify-center gap-2 border-2 border-orange-100 mt-4">
+      <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
+      <p className="text-sm text-orange-600 font-medium tracking-wide">Initializing Map Delivery View...</p>
+    </div>
+  ),
+})
 
 
 
@@ -37,21 +46,141 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
     inquiryType: "",
     stallName: "",
     deliveryDate: "",
+    addressDetails: "", // Landmarks, house no, etc.
     paymentMethod: "", // "phonepe" or "cod"
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
+  const [location, setLocation] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null)
+  const [locationStatus, setLocationStatus] = useState<"requesting" | "granted" | "denied" | null>(null)
   const { toast } = useToast()
 
 
   useEffect(() => {
-    if (preSelectedFlavors.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        selectedFlavors: preSelectedFlavors,
-      }))
-    }
+    setFormData((prev) => ({
+      ...prev,
+      selectedFlavors: preSelectedFlavors,
+    }))
   }, [preSelectedFlavors])
+
+  // Request location when user starts filling form
+  useEffect(() => {
+    if (formData.name && !location && locationStatus === null) {
+      // Add small delay to ensure form is ready
+      const timer = setTimeout(() => {
+        requestLocation()
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [formData.name])
+
+  const requestLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location Not Supported",
+        description: "Your browser doesn't support location services",
+        variant: "destructive"
+      })
+      setLocationStatus("denied")
+      return
+    }
+
+    // Check if permission is already granted
+    try {
+      if (navigator.permissions) {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' })
+
+        if (permissionStatus.state === 'denied') {
+          setLocationStatus("denied")
+          toast({
+            title: "Location Permission Blocked",
+            description: "Please enable location in your browser settings and refresh.",
+            variant: "destructive"
+          })
+          return
+        }
+      }
+    } catch (error) {
+      console.log("Permission API not available, proceeding with direct request")
+    }
+
+    setLocationStatus("requesting")
+
+    // Primary: Browser Geolocation
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        }
+        setLocation(coords)
+        setLocationStatus("granted")
+
+        const accuracyText = coords.accuracy < 50
+          ? "High accuracy (GPS)"
+          : coords.accuracy < 200
+            ? "Medium accuracy (WiFi)"
+            : "Low accuracy (Network)"
+
+        toast({
+          title: "📍 Location Captured",
+          description: `Lat: ${coords.latitude.toFixed(4)}, Lng: ${coords.longitude.toFixed(4)}\n${accuracyText} - ±${Math.round(coords.accuracy)}m`,
+        })
+      },
+      async (error) => {
+        console.warn("Browser Geolocation failed, trying IP fallback...", error)
+
+        try {
+          // Fallback: IP-based Geolocation (Free API)
+          const response = await fetch('https://ipapi.co/json/')
+          const data = await response.json()
+
+          if (data.latitude && data.longitude) {
+            const coords = {
+              latitude: data.latitude,
+              longitude: data.longitude,
+              accuracy: 5000 // IP geolocation is rough (city level)
+            }
+            setLocation(coords)
+            setLocationStatus("granted")
+
+            toast({
+              title: "📍 Location Detected (IP Fallback)",
+              description: `City: ${data.city || 'Detected'}. Accuracy: ±5km (Desktop Mode)`,
+            })
+            return
+          }
+        } catch (ipError) {
+          console.error("IP Fallback failed too:", ipError)
+        }
+
+        setLocationStatus("denied")
+        let errorMessage = "We'll proceed without location. You can add it manually in the message."
+
+        if (error.code === 1) {
+          errorMessage = "Location access denied. Please allow location in browser settings."
+        } else if (error.code === 2) {
+          errorMessage = "Location unavailable on this device. Please use a mobile phone for accurate GPS."
+        } else if (error.code === 3) {
+          errorMessage = "Location request timed out. Please add your address manually."
+        }
+
+        toast({
+          title: "Location Access Failed",
+          description: errorMessage,
+          variant: "destructive"
+        })
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 5000, // Faster timeout since we have a fallback
+        maximumAge: 300000
+      }
+    )
+  }
+
+
 
   const updateFlavorQuantity = (flavor: string, change: number) => {
     setFormData((prev) => {
@@ -101,7 +230,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
     if (flavorDetails[flavorIdOrName]) {
       const priceStr = flavorDetails[flavorIdOrName].price
       const priceNum = parseInt(priceStr.replace(/[^0-9]/g, ''))
-      return isNaN(priceNum) ? 230 : priceNum
+      return isNaN(priceNum) ? 500 : priceNum
     }
 
     // If not found by ID, try to find by name (case-insensitive)
@@ -112,10 +241,10 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
     if (flavorKey && flavorDetails[flavorKey]) {
       const priceStr = flavorDetails[flavorKey].price
       const priceNum = parseInt(priceStr.replace(/[^0-9]/g, ''))
-      return isNaN(priceNum) ? 230 : priceNum
+      return isNaN(priceNum) ? 500 : priceNum
     }
 
-    return 230 // Default price if flavor not found
+    return 500 // Default price if flavor not found
   }
 
   // Calculate total amount using actual flavor prices
@@ -134,9 +263,13 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Prevent duplicate submissions
-    if (isSubmitting) {
-      console.log("Already submitting, ignoring duplicate request")
+    // Strict Validation: Ensure all fields are filled
+    if (!formData.name || !formData.phone || !formData.stallName || !formData.deliveryDate || !formData.paymentMethod || !formData.addressDetails || !formData.inquiryType || formData.selectedFlavors.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields, including your address and payment method, before submitting.",
+        variant: "destructive"
+      })
       return
     }
 
@@ -167,6 +300,8 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
           deliveryDate: formData.deliveryDate,
           totalAmount: calculatedTotalAmount,
           paymentMethod: formData.paymentMethod,
+          addressDetails: formData.addressDetails,
+          location: location, // Include client location
         }),
       })
 
@@ -185,33 +320,38 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
       }
 
       if (orderResult.success) {
-        // Export order data to Excel
-        const excelFileName = exportOrderToExcel({
+        // Generate PDF Receipt Automatically
+        generateOrderPDF({
+          orderId: orderResult.orderId,
           name: formData.name,
           phone: formData.phone,
           stallName: formData.stallName,
           deliveryDate: formData.deliveryDate,
-          iceCreams: Object.entries(flavorCounts).map(([name, quantity]) => ({
-            name,
+          iceCreams: Object.entries(flavorCounts).map(([nameOrId, quantity]) => ({
+            name: flavorDetails[nameOrId]?.name || nameOrId,
             quantity,
+            pricePerUnit: getFlavorPrice(nameOrId)
           })),
           paymentMethod: formData.paymentMethod,
           totalAmount: calculatedTotalAmount,
           inquiryType: formData.inquiryType,
           message: formData.message,
           createdAt: new Date(),
-          status: 'Completed'
+          status: 'Confirmed'
         })
 
         const successMessage = orderResult.emailSent
-          ? `Email sent successfully! Check spam folder at chvamshi482@gmail.com.`
+          ? `Email sent successfully! Check spam folder at moores1807@gmail.com.`
           : `Order saved! Email sending failed - ${orderResult.emailError || 'check console'}`
 
         toast({
           title: "Order Submitted Successfully! 🎉",
-          description: `Thank you ${formData.name}! ${successMessage} Excel: "${excelFileName}"`,
+          description: `Thank you ${formData.name}! ${successMessage} PDF Receipt downloaded.`,
         })
 
+        if (onFlavorUpdate) {
+          onFlavorUpdate([])
+        }
         setFormData({
           name: "",
           phone: "",
@@ -221,8 +361,11 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
           stallName: "",
           deliveryDate: "",
           paymentMethod: "",
+          addressDetails: "",
         })
         setShowPayment(false)
+        setLocation(null)
+        setLocationStatus(null)
       } else {
         throw new Error(orderResult.error || "Form submission failed")
       }
@@ -266,7 +409,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span>chvamshi482@gmail.com</span>
+                    <span>moores1807@gmail.com</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
@@ -332,33 +475,48 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                       </p>
                     </div>
                     <div className="space-y-2">
-                      {Object.entries(getUniqueFlavorsSummary()).map(([flavor, quantity]) => (
-                        <div key={flavor} className="flex items-center justify-between bg-background p-3 rounded-md">
-                          <span className="font-medium">{flavor}</span>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateFlavorQuantity(flavor, -1)}
-                              disabled={quantity <= 0}
-                            >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <Badge variant="secondary" className="min-w-[2rem] text-center">
-                              {quantity}
-                            </Badge>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateFlavorQuantity(flavor, 1)}
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
+                      {Object.entries(getUniqueFlavorsSummary()).map(([flavorId, quantity]) => {
+                        const unitPrice = getFlavorPrice(flavorId)
+                        const subtotal = unitPrice * quantity
+                        return (
+                          <div key={flavorId} className="flex flex-col bg-background p-4 rounded-xl border-2 border-orange-50 hover:border-orange-200 transition-all shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-gray-900">{flavorDetails[flavorId]?.name || flavorId}</span>
+                                <span className="text-xs text-orange-600 font-bold">₹{unitPrice} per unit</span>
+                              </div>
+                              <div className="flex items-center gap-3 bg-gray-50 p-1 rounded-full border">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-white text-orange-600"
+                                  onClick={() => updateFlavorQuantity(flavorId, -1)}
+                                  disabled={quantity <= 0}
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                                <span className="min-w-[1.5rem] text-center font-bold text-gray-700">
+                                  {quantity}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-white text-orange-600"
+                                  onClick={() => updateFlavorQuantity(flavorId, 1)}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-100 italic">
+                              <span className="text-xs text-gray-400">Subtotal:</span>
+                              <span className="text-sm font-black text-orange-600">₹{subtotal.toFixed(2)}</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )}
@@ -385,6 +543,94 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                       placeholder="Enter your phone number"
                     />
                   </div>
+                </div>
+
+                {/* Accurate Location Picker */}
+                {locationStatus && (
+                  <div className={`p-4 rounded-xl border-2 transition-all duration-500 overflow-hidden ${locationStatus === "granted"
+                    ? "bg-green-50/50 border-green-100 dark:bg-green-950/20 dark:border-green-900"
+                    : locationStatus === "denied"
+                      ? "bg-red-50/50 border-red-100 dark:bg-red-950/20 dark:border-red-900"
+                      : "bg-blue-50/50 border-blue-100 dark:bg-blue-950/20 dark:border-blue-900"
+                    }`}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${locationStatus === "granted" ? "bg-green-100 text-green-600" :
+                          locationStatus === "denied" ? "bg-red-100 text-red-600" :
+                            "bg-blue-100 text-blue-600"
+                          }`}>
+                          <MapPin className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                            {locationStatus === "granted" ? "Location Detected" :
+                              locationStatus === "denied" ? "Location Access Blocked" : "Detecting Your Location..."}
+                          </h4>
+                          <p className="text-[11px] text-gray-500 font-medium">
+                            {locationStatus === "granted" ? "Drag the marker to your exact house for 100% accuracy" :
+                              locationStatus === "denied" ? "Using manual address only" : "Using Industry Standard detection..."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {locationStatus === "denied" && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setLocationStatus(null)
+                            requestLocation()
+                          }}
+                          className="h-8 text-[11px] px-3 bg-white"
+                        >
+                          Try Again
+                        </Button>
+                      )}
+                    </div>
+                    {locationStatus === "granted" && location && (
+                      <div className="mt-4 animate-in fade-in zoom-in duration-500">
+                        <LeafletLocationPicker
+                          initialPosition={{ lat: location.latitude, lng: location.longitude }}
+                          onConfirm={async (pos: { lat: number; lng: number }) => {
+                            // Save coordinates immediately
+                            setLocation({ latitude: pos.lat, longitude: pos.lng, accuracy: 0 })
+
+                            // Try to get human-readable address for the toast
+                            let address = "Location confirmed"
+                            try {
+                              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`)
+                              const data = await res.json()
+                              address = data.display_name ? `📍 ${data.display_name.split(',').slice(0, 3).join(',')}` : "Location coordinates captured"
+                            } catch (e) {
+                              console.warn("Frontend geocoding failed")
+                            }
+
+                            toast({
+                              title: "✅ Accuracy Confirmed",
+                              description: address,
+                            })
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="bg-orange-50/50 p-5 rounded-2xl border-2 border-orange-100 space-y-3 transition-all hover:bg-orange-50">
+                  <Label htmlFor="addressDetails" className="text-orange-900 font-bold flex items-center gap-2 text-sm">
+                    🏠 House No. / Landmark / Nearest Place
+                  </Label>
+                  <Input
+                    id="addressDetails"
+                    placeholder="Example: Flat 201, Near Pizza Hut, Beside SBI ATM..."
+                    value={formData.addressDetails}
+                    onChange={(e) => setFormData({ ...formData, addressDetails: e.target.value })}
+                    className="bg-white border-orange-200 focus:border-orange-500 rounded-xl h-12 shadow-sm"
+                  />
+                  <p className="text-[10px] text-orange-600 font-bold uppercase tracking-wider">
+                    Pinpoint Accuracy: Add your nearest famous landmark!
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -455,27 +701,65 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                     }}
                     className="grid grid-cols-1 md:grid-cols-2 gap-4"
                   >
-                    <div className="relative">
+                    <div className="relative group">
                       <RadioGroupItem value="phonepe" id="phonepe" className="peer sr-only" />
                       <Label
                         htmlFor="phonepe"
-                        className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all duration-300 transform hover:scale-105"
+                        className="relative flex flex-col items-center justify-center rounded-2xl border-4 border-muted bg-background h-48 overflow-hidden hover:border-purple-400 peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:shadow-[0_0_30px_rgba(147,51,234,0.3)] cursor-pointer transition-all duration-500 transform hover:scale-[1.02]"
                       >
-                        <Smartphone className="w-10 h-10 mb-3 text-purple-600" />
-                        <span className="text-lg font-semibold">PhonePe</span>
-                        <span className="text-xs text-muted-foreground mt-1">Scan QR & Pay</span>
+                        {/* Background Video */}
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                        >
+                          <source src="/Upi.mp4" type="video/mp4" />
+                        </video>
+
+                        {/* Overlay to ensure text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white peer-data-[state=checked]:via-purple-50/90 peer-data-[state=checked]:to-purple-50 transition-all duration-300"></div>
+
+                        {/* Content */}
+                        <div className="relative z-10 flex flex-col items-center">
+                          <div className="p-3 bg-purple-100 rounded-full mb-3 shadow-inner">
+                            <Smartphone className="w-10 h-10 text-purple-600 animate-pulse" />
+                          </div>
+                          <span className="text-xl font-black text-purple-900 uppercase tracking-tighter">UPI / PhonePe</span>
+                          <span className="text-xs text-purple-700 font-bold mt-1 bg-white/50 px-2 py-0.5 rounded-full">Scan & Pay Securely</span>
+                        </div>
                       </Label>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative group">
                       <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
                       <Label
                         htmlFor="cod"
-                        className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-background p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all duration-300 transform hover:scale-105"
+                        className="relative flex flex-col items-center justify-center rounded-2xl border-4 border-muted bg-background h-48 overflow-hidden hover:border-green-400 peer-data-[state=checked]:border-green-600 peer-data-[state=checked]:shadow-[0_0_30px_rgba(22,163,74,0.3)] cursor-pointer transition-all duration-500 transform hover:scale-[1.02]"
                       >
-                        <Banknote className="w-10 h-10 mb-3 text-green-600" />
-                        <span className="text-lg font-semibold">Cash on Delivery</span>
-                        <span className="text-xs text-muted-foreground mt-1">Pay when you receive</span>
+                        {/* Background Video */}
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                        >
+                          <source src="/Cash.mp4" type="video/mp4" />
+                        </video>
+
+                        {/* Overlay to ensure text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white peer-data-[state=checked]:via-green-50/90 peer-data-[state=checked]:to-green-50 transition-all duration-300"></div>
+
+                        {/* Content */}
+                        <div className="relative z-10 flex flex-col items-center">
+                          <div className="p-3 bg-green-100 rounded-full mb-3 shadow-inner">
+                            <Banknote className="w-10 h-10 text-green-600 animate-bounce" style={{ animationDuration: '3s' }} />
+                          </div>
+                          <span className="text-xl font-black text-green-900 uppercase tracking-tighter">Cash on Delivery</span>
+                          <span className="text-xs text-green-700 font-bold mt-1 bg-white/50 px-2 py-0.5 rounded-full">Handover Cash</span>
+                        </div>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -528,7 +812,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                 )}
 
                 <div className="text-xs text-muted-foreground text-center animate-fade-in bg-muted/30 p-4 rounded-lg">
-                  📧 Your order will be sent to chvamshi482@gmail.com and we'll contact you at{" "}
+                  📧 Your order will be sent to moores1807@gmail.com and we'll contact you at{" "}
                   {formData.phone || "your phone number"}
                   {" "}to confirm details and arrange delivery to {formData.stallName || "your stall"} on{" "}
                   {formData.deliveryDate || "selected date"}.

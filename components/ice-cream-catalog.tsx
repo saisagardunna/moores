@@ -300,7 +300,8 @@ const FlavorCard = ({
 export function IceCreamCatalog({ onFlavorSelect, selectedFlavors = [], onFlavorUpdate }: IceCreamCatalogProps) {
   const [localSelectedFlavors, setLocalSelectedFlavors] = useState<string[]>([])
 
-  const currentSelectedFlavors = selectedFlavors.length > 0 ? selectedFlavors : localSelectedFlavors
+  // Use local state only if the prop is not provided
+  const currentSelectedFlavors = onFlavorUpdate ? selectedFlavors : localSelectedFlavors
 
   const updateQuantity = (flavorId: string, newQuantity: number) => {
     const quantity = Math.max(0, Math.floor(newQuantity))

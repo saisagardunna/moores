@@ -45,7 +45,7 @@ export function ScheduleCall({ customerName, customerPhone }: ScheduleCallProps)
                     scheduledDate: callDate,
                     scheduledTime: callTime,
                     scheduledDateTime: scheduledDateTime.toISOString(),
-                    notificationEmail: "saisagardunna04@gmail.com",
+                    notificationEmail: "moores1807@gmail.com",
                 }),
             })
 

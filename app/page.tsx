@@ -3,7 +3,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Hero } from "@/components/hero"
 import { IceCreamCatalog } from "@/components/ice-cream-catalog"
 import { ContactSection } from "@/components/contact-section"
@@ -11,13 +11,34 @@ import { Footer } from "@/components/footer"
 
 export default function HomePage() {
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>([])
+  const [hasLoaded, setHasLoaded] = useState(false)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("moores_selected_flavors")
+    if (saved) {
+      try {
+        setSelectedFlavors(JSON.parse(saved))
+      } catch (e) {
+        console.error("Failed to parse saved flavors")
+      }
+    }
+    setHasLoaded(true)
+  }, [])
+
+  // Save to localStorage whenever selectedFlavors changes
+  useEffect(() => {
+    if (hasLoaded) {
+      localStorage.setItem("moores_selected_flavors", JSON.stringify(selectedFlavors))
+    }
+  }, [selectedFlavors, hasLoaded])
 
   const handleFlavorSelect = (flavorId: string, flavorName: string) => {
     setSelectedFlavors((prev) => {
-      if (prev.includes(flavorId)) {
-        return prev.filter(id => id !== flavorId)
-      }
-      return [...prev, flavorId]
+      const newFlavors = prev.includes(flavorId)
+        ? prev.filter(id => id !== flavorId)
+        : [...prev, flavorId]
+      return newFlavors
     })
   }
 

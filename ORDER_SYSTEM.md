@@ -1,27 +1,32 @@
-# Order System - Web3Forms Email
+# Order System - Nodemailer + Gmail
 
-## ✅ Configuration:
-- Service: Web3Forms (FREE)
-- Configuration: Environment Variables (.env.local)
+## ✅ Current Configuration:
+- **Service:** Nodemailer + Gmail (Direct SMTP)
+- **Email:** moores1807@gmail.com
+- **Features:** 
+  - 📍 Precise Location Capturing
+  - 🗺️ Clickable Google Maps Navigation
+  - 🏠 House/Landmark Details
 
 ## 🔑 Environment Variables:
 Make sure `.env.local` contains:
 ```env
 MONGODB_URI=...
-WEB3FORMS_ACCESS_KEY=d94c3d78-9511-4697-82be-0b8c961753ee
+EMAIL_USER=moores1807@gmail.com
+EMAIL_PASS=ufgk jjul ncvh vqvx
 ```
 
-## 🚀 Test Now:
-1. **RESTART SERVER** (Required for .env changes!)
-   `Ctrl + C` -> `npm run dev`
-2. Hard refresh (Ctrl + Shift + R)
-3. Submit order
-4. Check terminal for success
+## 🚀 Testing:
+1. **Locality:** Check if maps fly to your house when searching.
+2. **Details:** Enter House No/Landmark after confirming map.
+3. **Submit:** Verify "Order Submitted Successfully" popup.
+4. **Receive:** Check your email for the new layout with Google Maps link.
 
-## 📧 Email Will Include:
-- Customer details
-- Order items
-- Total amount
-- Payment method
+## 📧 Email Layout:
+- **Customer details**
+- **Order items**
+- **1-Click Google Maps Link**
+- **Detected Street Address**
+- **Manual Landmark/House Info**
 
-Everything is ready! Test it now! 🎉
+Everything is upgraded! Test the mapping and email system now! 🎉

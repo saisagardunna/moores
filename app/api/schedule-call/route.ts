@@ -60,24 +60,20 @@ Call ID: ${call.insertedId}
         // 3. Send Email via Nodemailer
         let emailSent = false
 
-        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            try {
-                // Send to Admin (EMAIL_USER) + Optional Customer (notificationEmail)
-                const recipients = [process.env.EMAIL_USER]
-                if (notificationEmail) recipients.push(notificationEmail)
+        try {
+            const recipients = ["moores1807@gmail.com"]
+            if (notificationEmail) recipients.push(notificationEmail)
 
-                await transporter.sendMail({
-                    ...mailOptions,
-                    to: recipients.join(","),
-                    subject: `📞 Call Scheduled - ${customerName}`,
-                    text: emailText,
-                    html: emailHtml,
-                })
-                emailSent = true
-                console.log("✅ Call notification sent to:", recipients.join(", "))
-            } catch (err) {
-                console.error("❌ Nodemailer scheduling error:", err)
-            }
+            await transporter.sendMail({
+                ...mailOptions,
+                to: recipients.join(","),
+                subject: `📞 Call Scheduled - ${customerName}`,
+                text: emailText,
+                html: emailHtml,
+            })
+            emailSent = true
+        } catch (err) {
+            console.error("❌ Nodemailer scheduling error:", err)
         }
 
         return NextResponse.json({

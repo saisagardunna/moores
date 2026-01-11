@@ -218,7 +218,7 @@ export const flavorDetails: Record<string, FlavorDetails> = {
         price: "₹550",
         category: "4 Liter Pack",
         image: "/purple-black-current-ice-cream.jpg",
-        shortDescription: "Tangy black currant with a perfect balance of sweet and tart",
+        shortDescription: "Tangy black current with a perfect balance of sweet and tart",
         detailedDescription: "Our Black Current ice cream offers a sophisticated flavor profile with its distinctive tangy-sweet taste. Made from premium black currant berries, this purple-hued delight provides a refreshing alternative to traditional fruit flavors.",
         ingredients: [
             "Premium black currant berries",
@@ -517,7 +517,7 @@ export const flavorDetails: Record<string, FlavorDetails> = {
         ],
         process: [
             "Roast cashews in ghee until golden",
-            "Soak raisins in warm water to plump them",
+            "Soak raisins in warm water to pulp them",
             "Grind half the cashews into smooth paste",
             "Chop remaining cashews coarsely",
             "Prepare saffron-infused cream base",

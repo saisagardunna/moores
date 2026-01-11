@@ -2,11 +2,12 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 interface OrderData {
+    orderId?: string
     name: string
     phone: string
     stallName: string
     deliveryDate: string
-    iceCreams: Array<{ name: string; quantity: number }>
+    iceCreams: Array<{ name: string; quantity: number; pricePerUnit?: number }>
     paymentMethod: string
     totalAmount: number
     inquiryType: string
@@ -19,7 +20,7 @@ export function generateOrderPDF(orderData: OrderData) {
     const doc = new jsPDF()
 
     // Add company header
-    doc.setFontSize(20)
+    doc.setFontSize(22)
     doc.setTextColor(255, 140, 0) // Orange color
     doc.text("Moore's Ice Cream", 105, 20, { align: 'center' })
 
@@ -27,18 +28,26 @@ export function generateOrderPDF(orderData: OrderData) {
     doc.setTextColor(0, 0, 0)
     doc.text('Order Receipt', 105, 30, { align: 'center' })
 
+    // Add Order ID if present
+    if (orderData.orderId) {
+        doc.setFontSize(10)
+        doc.setTextColor(100, 100, 100)
+        doc.text(`Order ID: ${orderData.orderId}`, 105, 35, { align: 'center' })
+    }
+
     // Add date
     doc.setFontSize(10)
-    doc.text(`Date: ${new Date(orderData.createdAt).toLocaleString()}`, 14, 40)
+    doc.setTextColor(0, 0, 0)
+    doc.text(`Date: ${new Date(orderData.createdAt).toLocaleString()}`, 14, 45)
 
     // Customer Information
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text('Customer Information', 14, 55)
+    doc.text('Customer Information', 14, 60)
 
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
-    let yPos = 65
+    let yPos = 70
     doc.text(`Name: ${orderData.name}`, 14, yPos)
     yPos += 7
     doc.text(`Phone: ${orderData.phone}`, 14, yPos)
@@ -54,13 +63,17 @@ export function generateOrderPDF(orderData: OrderData) {
     doc.text('Order Details', 14, yPos)
 
     // Prepare table data
-    const tableData = orderData.iceCreams.map((item, index) => [
-        index + 1,
-        item.name,
-        item.quantity,
-        `₹230`,
-        `₹${(item.quantity * 230).toFixed(2)}`
-    ])
+    const tableData = orderData.iceCreams.map((item, index) => {
+        const pricePerUnit = item.pricePerUnit || 500
+        const subtotal = item.quantity * pricePerUnit
+        return [
+            index + 1,
+            item.name,
+            item.quantity,
+            `Rs.${pricePerUnit}`,
+            `Rs.${subtotal.toFixed(2)}`
+        ]
+    })
 
     autoTable(doc, {
         startY: yPos + 5,
@@ -69,7 +82,7 @@ export function generateOrderPDF(orderData: OrderData) {
         theme: 'striped',
         headStyles: { fillColor: [255, 140, 0] },
         foot: [[
-            '', '', '', 'Total Amount:', `₹${orderData.totalAmount.toFixed(2)}`
+            '', '', '', 'Total Amount:', `Rs.${orderData.totalAmount.toFixed(2)}`
         ]],
         footStyles: { fillColor: [255, 140, 0], fontStyle: 'bold' }
     })
@@ -105,7 +118,7 @@ export function generateOrderPDF(orderData: OrderData) {
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
     doc.text('Thank you for choosing Moore\'s Ice Cream!', 105, 280, { align: 'center' })
-    doc.text('For any queries, contact: 6309312041 | chvamshi482@gmail.com', 105, 287, { align: 'center' })
+    doc.text('For any queries, contact: 6309312041 | moores1807@gmail.com', 105, 287, { align: 'center' })
 
     // Generate filename with timestamp
     const fileName = `Order_${orderData.name.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`

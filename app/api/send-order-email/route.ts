@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       access_key: "04af488a-752c-4a97-905b-1fcd534bca2d",
       subject: `New Ice Cream Order from ${name}`,
       from_name: "Moores Ice Cream Website",
-      to: "chvamshi482@gmail.com",
+      to: "moores1807@gmail.com",
       message: `
 New Order Details:
 ==================
