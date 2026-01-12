@@ -1,4 +1,4 @@
-// Cart and Wishlist Store using localStorage
+// Cart and Wishlist Store - Cart uses sessionStorage (clears on browser close), Wishlist uses localStorage
 export interface CartItem {
     id: string
     name: string
@@ -17,13 +17,13 @@ export interface WishlistItem {
 // Cart Functions
 export const getCart = (): CartItem[] => {
     if (typeof window === 'undefined') return []
-    const cart = localStorage.getItem('moores_cart')
+    const cart = sessionStorage.getItem('moores_cart')
     return cart ? JSON.parse(cart) : []
 }
 
 export const saveCart = (cart: CartItem[]) => {
     if (typeof window === 'undefined') return
-    localStorage.setItem('moores_cart', JSON.stringify(cart))
+    sessionStorage.setItem('moores_cart', JSON.stringify(cart))
     // Dispatch event for instant UI updates
     window.dispatchEvent(new Event('cartUpdated'))
     window.dispatchEvent(new StorageEvent('storage', {
@@ -69,7 +69,7 @@ export const updateCartQuantity = (itemId: string, quantity: number) => {
 
 export const clearCart = () => {
     if (typeof window === 'undefined') return
-    localStorage.removeItem('moores_cart')
+    sessionStorage.removeItem('moores_cart')
     // Dispatch event for instant UI updates
     window.dispatchEvent(new Event('cartUpdated'))
     window.dispatchEvent(new StorageEvent('storage', {
