@@ -10,7 +10,7 @@
 
 **A full-stack, production-ready ice cream ordering platform for Moore's Premium Ice Cream**
 
-[🌐 Live Demo](#) · [📦 Features](#-features) · [🚀 Getting Started](#-getting-started) · [⚙️ Environment Setup](#️-environment-variables)
+[🌐 Live Demo](https://moores.vercel.app) · [📦 Features](#-features) · [🚀 Getting Started](#-getting-started) · [⚙️ Environment Setup](#️-environment-variables)
 
 </div>
 
@@ -304,8 +304,8 @@ GOOGLE_SHEET_ID=your_google_sheet_id
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/moores-ice-cream.git
-cd moores-ice-cream
+git clone https://github.com/saisagardunna/moores.git
+cd moores
 
 # 2. Install dependencies
 npm install
