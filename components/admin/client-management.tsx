@@ -43,6 +43,9 @@ interface Order {
   paymentStatus: string
   status: string
   isPaid?: boolean
+  addressDetails?: string
+  message?: string
+  email?: string
 }
 
 export function ClientManagement() {
@@ -431,6 +434,22 @@ export function ClientManagement() {
                                                   ))}
                                                 </div>
                                               </div>
+                                              {(order.addressDetails || order.message) && (
+                                                <div className="mt-3 pt-3 border-t space-y-2">
+                                                  {order.addressDetails && (
+                                                    <div>
+                                                      <p className="text-sm font-medium">Delivery Address:</p>
+                                                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{order.addressDetails}</p>
+                                                    </div>
+                                                  )}
+                                                  {order.message && (
+                                                    <div>
+                                                      <p className="text-sm font-medium">Message:</p>
+                                                      <p className="text-sm text-muted-foreground whitespace-pre-wrap italic">{order.message}</p>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
                                             </div>
                                           ))}
                                         </div>

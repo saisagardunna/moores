@@ -22,6 +22,8 @@ interface Order {
     inquiryType: string
     message: string
     createdAt: string
+    email?: string
+    addressDetails?: string
 }
 
 export default function AdminDashboard() {
@@ -252,7 +254,8 @@ export default function AdminDashboard() {
                                                     <h4 className="font-semibold text-sm text-muted-foreground mb-2">Customer</h4>
                                                     <p className="font-bold">{order.name}</p>
                                                     <p className="text-sm text-muted-foreground">{order.phone}</p>
-                                                    <p className="text-sm text-muted-foreground">{order.stallName}</p>
+                                                    {order.email && <p className="text-sm text-muted-foreground break-all">{order.email}</p>}
+                                                    <p className="text-sm text-muted-foreground mt-1">Stall: {order.stallName}</p>
                                                 </div>
 
                                                 {/* Order Details */}
@@ -289,13 +292,26 @@ export default function AdminDashboard() {
                                                     <p className="text-sm text-muted-foreground">
                                                         {new Date(order.createdAt).toLocaleTimeString()}
                                                     </p>
-                                                    {order.message && (
-                                                        <p className="text-xs text-muted-foreground mt-2 italic">
-                                                            "{order.message.substring(0, 50)}{order.message.length > 50 ? '...' : ''}"
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
+
+                                            {/* Extra Details Row (Address & Message) */}
+                                            {(order.addressDetails || order.message) && (
+                                                <div className="mt-6 pt-4 border-t flex flex-col gap-4">
+                                                    {order.addressDetails && (
+                                                        <div>
+                                                            <h4 className="font-semibold text-sm text-muted-foreground mb-1">Delivery Address</h4>
+                                                            <p className="text-sm whitespace-pre-wrap">{order.addressDetails}</p>
+                                                        </div>
+                                                    )}
+                                                    {order.message && (
+                                                        <div>
+                                                            <h4 className="font-semibold text-sm text-muted-foreground mb-1">Special Request / Message</h4>
+                                                            <p className="text-sm whitespace-pre-wrap italic bg-muted/30 p-3 rounded-md border">{order.message}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))}

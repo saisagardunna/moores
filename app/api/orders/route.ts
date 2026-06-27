@@ -53,6 +53,8 @@ export async function GET() {
       paymentMethod: order.paymentMethod || "cod",
       inquiryType: order.inquiryType || "order",
       message: order.message || "",
+      email: order.email || "",
+      addressDetails: order.addressDetails || "",
       status: order.status || "confirmed",
       createdAt: order.createdAt ? order.createdAt.toISOString() : new Date().toISOString(),
     }))

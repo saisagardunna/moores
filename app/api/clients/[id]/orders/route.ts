@@ -17,6 +17,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       paymentStatus: order.paymentStatus || "unknown",
       status: order.status || "unknown",
       iceCreams: order.iceCreams || [],
+      message: order.message || "",
+      email: order.email || "",
+      addressDetails: order.addressDetails || "",
     }))
 
     return NextResponse.json({ success: true, orders: formattedOrders })
