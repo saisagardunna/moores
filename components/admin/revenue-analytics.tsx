@@ -92,10 +92,10 @@ export function RevenueAnalytics() {
   }
 
   const getGrowthPercentage = () => {
-    if (revenueData.length < 2) return 0
+    if (revenueData.length < 2) return "0.0"
     const currentMonth = revenueData[revenueData.length - 1]?.totalRevenue || 0
     const previousMonth = revenueData[revenueData.length - 2]?.totalRevenue || 0
-    if (previousMonth === 0) return 0
+    if (previousMonth === 0) return "0.0"
     return (((currentMonth - previousMonth) / previousMonth) * 100).toFixed(1)
   }
 
