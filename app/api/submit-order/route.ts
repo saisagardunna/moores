@@ -125,16 +125,26 @@ Order ID: ${order.insertedId}
     let emailSent = false
 
     try {
-      const recipients = ["moores1807@gmail.com"]
-      if (email) recipients.push(email)
-
+      // 1. Send to Business
       await transporter.sendMail({
         ...mailOptions,
-        to: recipients.join(","),
-        subject: `Order Confirmation: ${name} - ₹${totalAmount}`,
-        text: emailText, // Fallback plain text
-        html: emailHtml, // HTML version
+        to: "moores1807@gmail.com",
+        subject: `New Order: ${name} - ₹${totalAmount}`,
+        text: emailText,
+        html: emailHtml,
       })
+
+      // 2. Send to Customer (if email provided)
+      if (email) {
+        await transporter.sendMail({
+          ...mailOptions,
+          to: email,
+          subject: `Order Confirmation - Moores Ice Cream - ₹${totalAmount}`,
+          text: emailText,
+          html: emailHtml,
+        })
+      }
+      
       emailSent = true
     } catch (error) {
       console.error("Nodemailer Error:", error)
