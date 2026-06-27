@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
 
     const {
       name,
+      email,
       phone,
       stallName,
       iceCreams,
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
     const { db } = await connectToDatabase()
     const order = await db.collection("orders").insertOne({
       name,
+      email,
       phone,
       stallName,
       iceCreams,
@@ -123,16 +125,73 @@ Order ID: ${order.insertedId}
     let emailSent = false
 
     try {
+      const recipients = ["moores1807@gmail.com"]
+      if (email) recipients.push(email)
+
       await transporter.sendMail({
         ...mailOptions,
-        to: "moores1807@gmail.com", // Official Business Receiver
-        subject: `Order: ${name} - ₹${totalAmount}`,
+        to: recipients.join(","),
+        subject: `Order Confirmation: ${name} - ₹${totalAmount}`,
         text: emailText, // Fallback plain text
         html: emailHtml, // HTML version
       })
       emailSent = true
     } catch (error) {
       console.error("Nodemailer Error:", error)
+    }
+
+    // 4. Send Data to Make.com (Automation)
+    if (process.env.MAKE_WEBHOOK_URL) {
+      try {
+        await fetch(process.env.MAKE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: order.insertedId,
+            name,
+            phone,
+            stallName,
+            deliveryDate,
+            items: iceCreams,
+            totalAmount,
+            paymentMethod,
+            message,
+            address: {
+              display: displayAddress,
+              details: addressDetails,
+              coordinates: location ? `${location.latitude},${location.longitude}` : null,
+              mapLink: mapsLink
+            },
+            status: "pending",
+            createdAt: new Date().toISOString()
+          })
+        });
+        console.log("Order data sent to Make.com");
+      } catch (webhookError) {
+        console.error("Make.com Webhook Error:", webhookError);
+        // We don't fail the request if the webhook fails, just log it
+      }
+    }
+
+    // 5. Send Data to Google Sheet
+    try {
+      const { appendOrderToSheet } = await import("@/lib/google-sheets");
+      await appendOrderToSheet({
+        _id: order.insertedId,
+        name,
+        phone,
+        stallName,
+        iceCreams,
+        totalAmount,
+        paymentMethod: paymentMethod || "cod",
+        status: "pending",
+        createdAt: new Date(),
+        location,
+        addressDetails,
+        message
+      });
+    } catch (sheetError) {
+      console.error("Google Sheet Sync Error:", sheetError);
     }
 
     // 4. Return Response

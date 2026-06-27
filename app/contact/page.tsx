@@ -32,7 +32,7 @@ export default function ContactPage() {
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
-                    access_key: "76e95667-3dfd-4893-8daa-0667dfb0aec2",
+                    access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "d94c3d78-9511-4697-82be-0b8c961753ee",
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,

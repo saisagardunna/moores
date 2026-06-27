@@ -40,6 +40,7 @@ interface ContactSectionProps {
 export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: ContactSectionProps) {
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     selectedFlavors: [] as string[],
     message: "",
@@ -280,7 +281,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
     e.preventDefault()
 
     // Strict Validation: Ensure all fields are filled
-    if (!formData.name || !formData.phone || !formData.stallName || !formData.deliveryDate || !formData.paymentMethod || !formData.addressDetails || !formData.inquiryType || formData.selectedFlavors.length === 0) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.stallName || !formData.deliveryDate || !formData.paymentMethod || !formData.addressDetails || !formData.inquiryType || formData.selectedFlavors.length === 0) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields, including your address and payment method, before submitting.",
@@ -303,6 +304,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
         },
         body: JSON.stringify({
           name: formData.name,
+          email: formData.email,
           phone: formData.phone,
           stallName: formData.stallName,
           iceCreams: Object.entries(flavorCounts).map(([name, quantity]) => ({
@@ -370,6 +372,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
         }
         setFormData({
           name: "",
+          email: "",
           phone: "",
           selectedFlavors: [],
           message: "",
@@ -471,7 +474,7 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
                     <Input
@@ -480,6 +483,17 @@ export function ContactSection({ preSelectedFlavors = [], onFlavorUpdate }: Cont
                       onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                       required
                       placeholder="Enter your full name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                      required
+                      placeholder="Enter your email"
                     />
                   </div>
                   <div className="space-y-2">

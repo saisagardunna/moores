@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     // Prepare email content
     const emailContent = {
-      access_key: "04af488a-752c-4a97-905b-1fcd534bca2d",
+      access_key: process.env.WEB3FORMS_ACCESS_KEY || "d94c3d78-9511-4697-82be-0b8c961753ee",
       subject: `New Ice Cream Order from ${name}`,
       from_name: "Moores Ice Cream Website",
       to: "moores1807@gmail.com",
